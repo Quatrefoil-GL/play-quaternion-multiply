@@ -206,7 +206,8 @@
           ns app.comp.multiply $ :require
             quatrefoil.alias :refer $ group box sphere text line tube point-light
             quatrefoil.core :refer $ defcomp
-            quaternion.core :refer $ q* &q* v-scale q+ invert
+            quaternion.core :refer $ q* &q* q+ invert
+            quaternion.vector :refer $ v-scale
             quatrefoil.comp.control :refer $ comp-pin-point comp-switch comp-value
             quatrefoil.app.materials :refer $ cover-line
     |app.main $ %{} :FileEntry
