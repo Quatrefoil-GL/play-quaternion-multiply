@@ -12,11 +12,11 @@
           :code $ quote
             defcomp comp-container (store)
               let
-                  states $ :states store
-                  cursor $ :cursor states
-                  state $ either (:data states)
+                  states $ field store :states
+                  cursor $ field states :cursor
+                  state $ either (field states :data)
                     {} $ :tab :portal
-                  tab $ :tab state
+                  tab $ field state :tab
                   scaled 0.02
                 scene ({})
                   group
@@ -29,6 +29,12 @@
                       :position $ [] 20 40 50
                     ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                       :position $ [] 0 60 0
+          :examples $ []
+          :schema $ :: 'Dynamic
+        |field $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defn field (value key)
+              option:unwrap-or (get value key) nil
           :examples $ []
           :schema $ :: 'Dynamic
       :ns $ %{} 'NsEntry (:doc |)
@@ -82,12 +88,12 @@
           :code $ quote
             defcomp comp-multiply (states)
               let
-                  cursor $ :cursor states
-                  state $ or (:data states)
+                  cursor $ field states :cursor
+                  state $ or (field states :data)
                     {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
-                  w-ratio $ :w-ratio state
-                  z-base $ :z-base state
-                  z-inc $ :z-inc state
+                  w-ratio $ field state :w-ratio
+                  z-base $ field state :z-base
+                  z-inc $ field state :z-inc
                   multiplier $ let
                       x 0
                       y 0
@@ -98,17 +104,18 @@
                   calc-points $ fn (p0 next)
                     apply-args
                         []
-                        , p0 $ js/Math.ceil (:rotate-inc-size state)
+                        , p0 $ js/Math.ceil (field state :rotate-inc-size)
                       fn (acc p n)
                         if (<= n 0) acc $ recur (conj acc p) (&q* next p) (dec n)
                 group ({}) element-axis
                   group ({}) & $ ->
-                    range $ js/Math.ceil (:z-inc-size state)
+                    range $ js-number
+                      js/Math.ceil $ field state :z-inc-size
                     mapcat $ fn (idx)
                       let
                           points $ calc-points
                             q+
-                              [] 8 5 z-base $ :a-w state
+                              [] 8 5 z-base $ field state :a-w
                               v-scale ([] 0 0 z-inc 0) idx
                             , multiplier
                         []
@@ -119,13 +126,13 @@
                             :position $ [] 0 0 0
                             :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
                   comp-point (v-scale multiplier 10) true
-                  if (:show-labels? state)
+                  if (field state :show-labels?)
                     comp-labels
-                      [] 8 5 z-base $ :a-w state
+                      [] 8 5 z-base $ field state :a-w
                       v-scale multiplier 10
                   comp-value
                     {} (:speed 0.04) (:show-text? true) (:label |w-ratio)
-                      :value $ :w-ratio state
+                      :value $ field state :w-ratio
                       :position $ [] 4 2 12
                       :bound $ [] 0 1
                       :color 0xffff55
@@ -133,7 +140,7 @@
                       d! cursor $ assoc state :w-ratio v1
                   comp-value
                     {} (:speed 1) (:show-text? true) (:label |z-base)
-                      :value $ :z-base state
+                      :value $ field state :z-base
                       :position $ [] 12 12 1
                       :bound $ [] -20 60
                       :color 0xffff55
@@ -141,7 +148,7 @@
                       d! cursor $ assoc state :z-base v1
                   comp-value
                     {} (:speed 2) (:show-text? true) (:label |a-w)
-                      :value $ :a-w state
+                      :value $ field state :a-w
                       :position $ [] 12 22 1
                       :bound $ [] 0 20
                       :color 0x77ffcc
@@ -149,7 +156,7 @@
                       d! cursor $ assoc state :a-w v1
                   comp-value
                     {} (:speed 1) (:show-text? true) (:label |z-inc)
-                      :value $ :z-inc state
+                      :value $ field state :z-inc
                       :position $ [] 13 14 4
                       :bound $ [] 0.4 20
                       :color 0xffff55
@@ -157,7 +164,7 @@
                       d! cursor $ assoc state :z-inc v1
                   comp-value
                     {} (:speed 1) (:show-text? true) (:label |z-inc-size)
-                      :value $ :z-inc-size state
+                      :value $ field state :z-inc-size
                       :position $ [] 18 15 1
                       :bound $ [] 1 6
                       :color 0xff55ff
@@ -165,7 +172,7 @@
                       d! cursor $ assoc state :z-inc-size v1
                   comp-value
                     {} (:speed 2) (:show-text? true) (:label |rotate-inc-size)
-                      :value $ :rotate-inc-size state
+                      :value $ field state :rotate-inc-size
                       :position $ [] -4 4 -20
                       :bound $ [] 1 20
                       :color 0xff55ff
@@ -173,7 +180,7 @@
                       d! cursor $ assoc state :rotate-inc-size v1
                   comp-switch
                     {} (:label |labels?) (:color 0x8855ff)
-                      :value $ :show-labels? state
+                      :value $ field state :show-labels?
                       :position $ [] 30 0 0
                     fn (v d!)
                       d! cursor $ assoc state :show-labels? v
@@ -206,6 +213,17 @@
               line $ {}
                 :points $ [][] ([] 0 0 20) ([] 0 0 -20)
                 :material $ assoc cover-line :color 0xffff99
+          :examples $ []
+          :schema $ :: 'Dynamic
+        |field $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defn field (value key)
+              option:unwrap-or (get value key) nil
+          :examples $ []
+          :schema $ :: 'Dynamic
+        |js-number $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defn js-number (value) (unsafe-coerce value Number)
           :examples $ []
           :schema $ :: 'Dynamic
         |w-hint-fn $ %{} 'CodeEntry (:doc |)
@@ -248,12 +266,24 @@
                   reset! *store store
           :examples $ []
           :schema $ :: 'Dynamic
+        |ffi-object $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defn ffi-object (value) (unsafe-coerce value JsObject)
+          :examples $ []
+          :schema $ :: 'Dynamic
+        |js-number $ %{} 'CodeEntry (:doc |)
+          :code $ quote
+            defn js-number (value) (unsafe-coerce value Number)
+          :examples $ []
+          :schema $ :: 'Dynamic
         |main! $ %{} 'CodeEntry (:doc |)
           :code $ quote
             defn main! () (load-console-formatter!) (inject-tree-methods)
               set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
                 :position $ [] 0 0 8
-                :aspect $ / js/window.innerWidth js/window.innerHeight
+                :aspect $ /
+                  js-number $ .-innerWidth (ffi-object js/window)
+                  js-number $ .-innerHeight (ffi-object js/window)
               let
                   canvas-el $ js/document.querySelector |canvas
                 init-renderer! canvas-el $ {} (:background 0x110022)
