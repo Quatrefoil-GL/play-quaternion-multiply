@@ -18,8 +18,8 @@ PR 预览按编号/run/attempt 隔离，生产前缀与原服务器 rsync 路径
 由 Caps 检查工具链一致性，不在工作流重复硬编码版本。
 
 使用正式 Calcit/procs 0.29.3，入口明确为 JS/browser。采用已发布的
-Quatrefoil 0.1.6 一致依赖组合：JS-FFI 0.2.2、Quaternion 0.2.12、
-Pointed Prompt 0.0.17；不任意拼接冲突的新版本，不使用 alpha/hash。
+Quatrefoil 0.1.7 一致依赖组合：JS-FFI 0.2.3、Quaternion 0.2.13、
+Pointed Prompt 0.0.18；依赖已在上游统一，不使用 alpha/hash。
 Caps 使用 strict 安装，原入口、公开定义和类型门禁改用当前命令并保留。
 
 组件返回具体 Component，轴线为 Shape；Number/Bool 与开放状态在真实
