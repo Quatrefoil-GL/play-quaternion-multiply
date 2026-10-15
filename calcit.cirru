@@ -3,7 +3,7 @@
   :about "|Machine-generated snapshot. Do not edit directly — changes will be overwritten. Use `calcit query` to inspect and `calcit edit`/`calcit tree` to modify. Run `calcit docs agents --contract` before mutations; use `--full` for first orientation or changed contract digest. Manual edits must follow format and schema conventions, then run `calcit edit format`."
   :package |app
   :entries $ {} $ :default
-    {} (:description |) (:init-fn 'app.main/main!) (:mode :native) (:reload-fn 'app.main/reload!) (:target :browser)
+    {} (:description |) (:init-fn 'app.main/main!) (:mode :js) (:reload-fn 'app.main/reload!) (:target :browser)
       :feature-policy $ {}
       :modules $ [] |touch-control/ |pointed-prompt/ |quatrefoil/ |quaternion/ |js-ffi/
       :type-slots $ {}
@@ -13,25 +13,21 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ field store :states
-                cursor $ field states :cursor
-                state $ either (field states :data)
-                  {} $ :tab :portal
-                tab $ field state :tab
+                states $ decode-map-as (field store :states) (:: 'Map 'Tag 'Dynamic)
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] 0 1.2 -0.5
-                  comp-multiply $ >> states :multiply
+                  comp-multiply $ decode-map-as (>> states :multiply) (:: 'Map 'Tag 'Dynamic)
                   ambient-light $ {} $ :color 0x666666
                   ; point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
                     :position $ [] 20 40 50
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
         'field $ %{} 'CodeEntry (:doc |)
@@ -49,13 +45,13 @@
     'app.comp.multiply $ %{} 'FileEntry
       :defs $ {}
         'as-bool $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn as-bool (value) (unsafe-coerce value Bool)
+          :code $ quote $ defn as-bool (value) (decode-map-as value 'Bool)
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Bool)
             :args $ [] 'Dynamic
             :features $ #{} :js-ffi
         'as-number $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn as-number (value) (unsafe-coerce value Number)
+          :code $ quote $ defn as-number (value) (decode-map-as value 'Number)
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Number)
             :args $ [] 'Dynamic
@@ -92,15 +88,17 @@
                 :position $ [] 20 0 0
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] (:: 'List 'Number) (:: 'List 'Number)
             :features $ #{} :js-ffi
         'comp-multiply $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-multiply (states)
             let
                 cursor $ field states :cursor
-                state $ or (field states :data)
-                  {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                state $ decode-map-as
+                  or (field states :data)
+                    {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                  :: 'Map 'Tag 'Dynamic
                 w-ratio $ as-number $ field state :w-ratio
                 z-base $ as-number $ field state :z-base
                 z-inc $ as-number $ field state :z-inc
@@ -117,24 +115,25 @@
                   quaternion w x y z_
                 scaled-multiplier $ q-scale multiplier 10
               group ({}) element-axis
-                group ({}) & $ ->
-                  range $ ceil z-inc-size
-                  mapcat $ fn (idx)
-                    hint-fn $ {}
-                      :args $ [] 'Number
-                      :return $ :: 'List 'Dynamic
-                    let
-                        start $ q+ (quaternion a-w 8 5 z-base)
-                          quaternion 0 0 0 $ * z-inc idx
-                        points $ calc-points start multiplier $ ceil rotate-inc-size
-                      []
-                        group ({}) & $ -> points $ map-indexed
-                          fn (point-idx p)
-                            comp-point p $ = 0 point-idx
-                        line $ {}
-                          :points $ map points quaternion-position
-                          :position $ [] 0 0 0
-                          :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
+                quatrefoil.alias/create-element :group ({})
+                  ->
+                    range $ ceil z-inc-size
+                    mapcat $ fn (idx)
+                      hint-fn $ {}
+                        :args $ [] 'Number
+                        :return $ :: 'List 'Dynamic
+                      let
+                          start $ q+ (quaternion a-w 8 5 z-base)
+                            quaternion 0 0 0 $ * z-inc idx
+                          points $ calc-points start multiplier $ ceil rotate-inc-size
+                        []
+                          quatrefoil.alias/create-element :group ({})
+                            -> points $ map-indexed $ fn (point-idx p)
+                              comp-point p $ = 0 point-idx
+                          line $ {}
+                            :points $ map points quaternion-position
+                            :position $ [] 0 0 0
+                            :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
                 comp-point scaled-multiplier true
                 if show-labels? $ comp-labels
                   quaternion-position $ quaternion a-w 8 5 z-base
@@ -145,6 +144,12 @@
                     :bound $ [] 0 1
                     :color 0xffff55
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :w-ratio v1
                 comp-value
                   {} (:speed 1) (:show-text? true) (:label |z-base) (:value z-base)
@@ -152,6 +157,12 @@
                     :bound $ [] -20 60
                     :color 0xffff55
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :z-base v1
                 comp-value
                   {} (:speed 2) (:show-text? true) (:label |a-w) (:value a-w)
@@ -159,6 +170,12 @@
                     :bound $ [] 0 20
                     :color 0x77ffcc
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :a-w v1
                 comp-value
                   {} (:speed 1) (:show-text? true) (:label |z-inc) (:value z-inc)
@@ -166,6 +183,12 @@
                     :bound $ [] 0.4 20
                     :color 0xffff55
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :z-inc v1
                 comp-value
                   {} (:speed 1) (:show-text? true) (:label |z-inc-size) (:value z-inc-size)
@@ -173,6 +196,12 @@
                     :bound $ [] 1 6
                     :color 0xff55ff
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :z-inc-size v1
                 comp-value
                   {} (:speed 2) (:show-text? true) (:label |rotate-inc-size) (:value rotate-inc-size)
@@ -180,16 +209,28 @@
                     :bound $ [] 1 20
                     :color 0xff55ff
                   fn (v1 d!)
+                    hint-fn $ {}
+                      :args $ [] 'Number $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :rotate-inc-size v1
                 comp-switch
                   {} (:label |labels?) (:color 0x8855ff) (:value show-labels?)
                     :position $ [] 30 0 0
                   fn (v d!)
+                    hint-fn $ {}
+                      :args $ [] 'Bool $ :: 'Fn
+                        {}
+                          :args $ [] 'Dynamic 'Dynamic
+                          :return 'Unit
+                      :return 'Unit
                     d! cursor $ assoc state :show-labels? v
                 point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
                   :position $ [] 20 40 50
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] $ :: 'Map 'Tag 'Dynamic
             :features $ #{} :js-ffi
         'comp-point $ %{} 'CodeEntry (:doc |)
@@ -208,7 +249,7 @@
                   :position point
                   :material $ {} (:kind :mesh-standard) (:color 0xdd0088) (:opacity 0.6) (:transparent false)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
+          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
             :args $ [] 'quaternion.core/Quaternion 'Bool
             :features $ #{} :js-ffi
         'element-axis $ %{} 'CodeEntry (:doc |)
@@ -221,7 +262,7 @@
                 :points $ [] ([] 0 0 20) ([] 0 0 -20)
                 :material $ assoc cover-line :color 0xffff99
           :examples $ []
-          :schema $ :: 'Dynamic
+          :schema $ :: 'quatrefoil.schema/Shape
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
             option:unwrap-or (get value key) nil
@@ -267,7 +308,7 @@
     'app.main $ %{} 'FileEntry
       :defs $ {}
         '*store $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defatom *store
+          :code $ quote $ defref *store
             {} $ :states $ {}
               :cursor $ []
           :examples $ []
@@ -289,6 +330,7 @@
                   store $ updater @*store op op-data
                 ; js/console.log |Dispatch: op op-data store
                 reset! *store store
+                , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ [] 'Dynamic 'Dynamic
@@ -302,11 +344,12 @@
                 canvas-el $ option:unwrap $ query-selector |canvas
               init-renderer! canvas-el $ {} $ :background 0x110022
             render-app!
-            add-watch *store :changes $ fn (store prev) (render-app!)
+            add-watch! *store :changes $ fn (store prev) (render-app!)
             set! js/window.onkeydown handle-key-event
             when (mobile?) (render-control!) (handle-control-events)
             init-controls!
             println |App-started!
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -322,14 +365,17 @@
             :features $ #{} :js-ffi
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
-            if (some? build-errors) (hud! |error build-errors)
+            if
+              not $ nil? build-errors
+              hud! |error build-errors
               do (hud! |ok~ nil) (clear-cache!)
                 when (mobile?) (clear-control-loop!) (handle-control-events)
-                remove-watch *store :changes
-                add-watch *store :changes $ fn (store prev) (render-app!)
+                remove-watch! *store :changes
+                add-watch! *store :changes $ fn (store prev) (render-app!)
                 render-app!
                 set! js/window.onkeydown handle-key-event
                 println |Code-updated.
+            , &unit
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Unit)
             :args $ []
@@ -346,7 +392,6 @@
             |@quamolit/quatrefoil-utils :refer $ inject-tree-methods
             quatrefoil.core :refer $ render-canvas! *global-tree init-controls! clear-cache! init-renderer! handle-key-event handle-control-events
             app.comp.container :refer $ comp-container
-            app.updater :refer $ [] updater
             |three :as THREE
             touch-control.core :refer $ render-control! control-states start-control-loop! clear-control-loop!
             |mobile-detect :default mobile-detect
@@ -354,11 +399,14 @@
             quatrefoil.dsl.object3d-dom :refer $ set-perspective-camera!
             |./calcit.build-errors :default build-errors
             js-ffi.browser :refer $ viewport-width viewport-height query-selector
+            app.updater :refer $ updater
     'app.updater $ %{} 'FileEntry
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store op op-data)
-            case-default op store $ :states $ update-states store op-data
+            match op
+              :states $ update-states store op-data
+              _ store
           :examples $ []
           :schema $ :: 'Fn $ {}
             :args $ [] (:: 'Map 'Tag 'Dynamic) 'Dynamic 'Dynamic
