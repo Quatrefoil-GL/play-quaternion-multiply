@@ -32,7 +32,9 @@
             :features $ #{} :js-ffi
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
-            option:unwrap-or (get value key) nil
+            match (get value key)
+              (:some found) found
+              (:none) nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Dynamic)
             :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
@@ -265,7 +267,9 @@
           :schema $ :: 'quatrefoil.schema/Shape
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
-            option:unwrap-or (get value key) nil
+            match (get value key)
+              (:some found) found
+              (:none) nil
           :examples $ []
           :schema $ :: 'Fn $ {} (:return 'Dynamic)
             :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
@@ -341,7 +345,9 @@
               :position $ [] 0 0 8
               :aspect $ / (viewport-width) (viewport-height)
             let
-                canvas-el $ option:unwrap $ query-selector |canvas
+                canvas-el $
+                  query-selector |canvas
+                  , .unwrap
               init-renderer! canvas-el $ {} $ :background 0x110022
             render-app!
             add-watch! *store :changes $ fn (store prev) (render-app!)
@@ -389,17 +395,17 @@
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
-            |@quamolit/quatrefoil-utils :refer $ inject-tree-methods
             quatrefoil.core :refer $ render-canvas! *global-tree init-controls! clear-cache! init-renderer! handle-key-event handle-control-events
             app.comp.container :refer $ comp-container
             |three :as THREE
-            touch-control.core :refer $ render-control! control-states start-control-loop! clear-control-loop!
+            touch-control.core :refer $ render-control! start-control-loop! clear-control-loop!
             |mobile-detect :default mobile-detect
             |bottom-tip :default hud!
             quatrefoil.dsl.object3d-dom :refer $ set-perspective-camera!
             |./calcit.build-errors :default build-errors
             js-ffi.browser :refer $ viewport-width viewport-height query-selector
             app.updater :refer $ updater
+            |@quatrefoil/utils :refer $ inject-tree-methods
     'app.updater $ %{} 'FileEntry
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
