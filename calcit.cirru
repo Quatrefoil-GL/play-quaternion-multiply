@@ -76,17 +76,17 @@
         'comp-labels $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-labels (a-position b-position)
             group ({})
-              text $ {} (:text |b) (:size 2) (:height 0.1) (:position b-position)
+              text $ {} (:text |b) (:size 2) (:depth 0.1) (:position b-position)
                 :material $ {} (:kind :mesh-lambert) (:color 0xffcccc) (:opacity 0.9) (:transparent true)
-              text $ {} (:text |a) (:size 2) (:height 0.1) (:position a-position)
+              text $ {} (:text |a) (:size 2) (:depth 0.1) (:position a-position)
                 :material $ {} (:kind :mesh-lambert) (:color 0xffcccc) (:opacity 0.9) (:transparent true)
-              text $ {} (:text |z) (:size 2) (:height 0.1)
+              text $ {} (:text |z) (:size 2) (:depth 0.1)
                 :position $ [] 0 0 20
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
-              text $ {} (:text |y) (:size 2) (:height 0.1)
+              text $ {} (:text |y) (:size 2) (:depth 0.1)
                 :position $ [] 0 20 0
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
-              text $ {} (:text |x) (:size 2) (:height 0.1)
+              text $ {} (:text |x) (:size 2) (:depth 0.1)
                 :position $ [] 20 0 0
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
           :examples $ []

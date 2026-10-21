@@ -17,10 +17,14 @@ PR 预览按编号/run/attempt 隔离，生产前缀与原服务器 rsync 路径
 串行队列保留待处理任务；构建和上传分别设定超时。Calcit 从 `deps.cirru` 读取，
 由 Caps 检查工具链一致性，不在工作流重复硬编码版本。
 
-使用正式 Calcit/procs 0.30.0，入口明确为 JS/browser。采用已发布的
-Quatrefoil 0.1.8 一致依赖组合：JS-FFI 0.2.3、Quaternion 0.2.14、
-Pointed Prompt 0.0.19、Touch Control 0.0.31；依赖已在上游统一，不使用 alpha/hash。
+使用者影响：同步正式 Calcit CLI/procs 0.30.1，入口仍为 JS/browser。采用已发布的
+Quatrefoil 0.1.9 一致依赖组合：JS-FFI 0.2.3、Quaternion 0.2.16、
+Pointed Prompt 0.0.19、Touch Control 0.0.31；依赖已在上游统一，不使用 alpha/hash。Quatrefoil 0.1.9 的 `update-states` 拒绝缺失的第二项 payload，显式 nil 保留；当前派发仍传入 cursor 与 payload 两项。
 Caps 使用 strict 安装，原入口、公开定义和类型门禁改用当前命令并保留。
+
+本轮浏览器发现五个轴/位置文本标签仍传 Three 已弃用的 `height`。仅这些 TextGeometry 参数改为
+`depth`，原数值 `0.1` 不变；这是 Three 当前 fallback 等价的字段迁移，不改变 Box、Plane 等
+合法的 height，也不让编译器硬编码场景领域规则。CI 原检查原位扩为 `--all-defs`，覆盖未被入口调用的定义。
 
 组件返回具体 Component，轴线为 Shape；Number/Bool 与开放状态在真实
 边界解码，不再靠强转。回调声明 Number/Bool 和 Unit dispatch 合同，
@@ -33,8 +37,8 @@ Option 读取使用现有公开接口；开放字段显式匹配 some/none，仍
 存在的 nil/false/0/空串，不改变默认值。CSS 直接使用正式 Calcit 模块附带的文件，
 移除两个旧 npm 包；注入方法改用已存在的 `@quatrefoil/utils`，实现保持不变。
 
-正式 0.30.1 配套可用后，仍需更新固定工具链并
-重新验收，不能将本次过渡迁移视为已完成 0.30.1 升级。
+原 0.30.0 的构建与浏览器证据仅作为历史基线；正式 0.30.1 组合以当前提交的完整 CI
+及真实交互验收为准。公式、场景、Three 版本和原部署路径不变，不以构建成功替代运行时验证。
 
 ### License
 
