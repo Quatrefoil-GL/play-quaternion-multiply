@@ -22,6 +22,10 @@ Quatrefoil 0.1.9 一致依赖组合：JS-FFI 0.2.3、Quaternion 0.2.16、
 Pointed Prompt 0.0.19、Touch Control 0.0.31；依赖已在上游统一，不使用 alpha/hash。Quatrefoil 0.1.9 的 `update-states` 拒绝缺失的第二项 payload，显式 nil 保留；当前派发仍传入 cursor 与 payload 两项。
 Caps 使用 strict 安装，原入口、公开定义和类型门禁改用当前命令并保留。
 
+本轮浏览器发现五个轴/位置文本标签仍传 Three 已弃用的 `height`。仅这些 TextGeometry 参数改为
+`depth`，原数值 `0.1` 不变；这是 Three 当前 fallback 等价的字段迁移，不改变 Box、Plane 等
+合法的 height，也不让编译器硬编码场景领域规则。CI 原检查原位扩为 `--all-defs`，覆盖未被入口调用的定义。
+
 组件返回具体 Component，轴线为 Shape；Number/Bool 与开放状态在真实
 边界解码，不再靠强转。回调声明 Number/Bool 和 Unit dispatch 合同，
 保留四元数左乘、迭代次数、标量提示、坐标和场景子节点顺序。
