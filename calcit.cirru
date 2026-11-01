@@ -27,17 +27,14 @@
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
             match (get value key)
               (:some found) found
               (:none) nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
+          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
@@ -49,30 +46,24 @@
         'as-bool $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-bool (value) (decode-map-as value 'Bool)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Bool) (:features :js-ffi)
         'as-number $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-number (value) (decode-map-as value 'Number)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic (-> Number) (:features :js-ffi)
         'calc-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn calc-points (p0 next times)
             if (<= times 0) ([])
               calc-points-loop ([] p0) (&q* next p0) next $ dec times
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'quaternion.core/Quaternion 'quaternion.core/Quaternion 'Number
-            :return $ :: 'List 'quaternion.core/Quaternion
+          :schema $ quote $ Fn quaternion.core/Quaternion quaternion.core/Quaternion Number
+            -> $ List quaternion.core/Quaternion
         'calc-points-loop $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn calc-points-loop (acc p next times)
             if (<= times 0) acc $ calc-points-loop (conj acc p) (&q* next p) next $ dec times
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'List 'quaternion.core/Quaternion) 'quaternion.core/Quaternion 'quaternion.core/Quaternion 'Number
-            :return $ :: 'List 'quaternion.core/Quaternion
+          :schema $ quote $ Fn (List quaternion.core/Quaternion) quaternion.core/Quaternion quaternion.core/Quaternion Number
+            -> $ List quaternion.core/Quaternion
         'comp-labels $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-labels (a-position b-position)
             group ({})
@@ -90,9 +81,7 @@
                 :position $ [] 20 0 0
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] (:: 'List 'Number) (:: 'List 'Number)
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (List Number) (List Number) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-multiply $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-multiply (states)
             let
@@ -116,125 +105,104 @@
                     z_ $ if (>= rest-space 0) (sqrt rest-space) 0
                   quaternion w x y z_
                 scaled-multiplier $ q-scale multiplier 10
-              group ({}) element-axis
-                quatrefoil.alias/create-element :group ({})
-                  ->
-                    range $ ceil z-inc-size
-                    mapcat $ fn (idx)
-                      hint-fn $ {}
-                        :args $ [] 'Number
-                        :return $ :: 'List 'Dynamic
-                      let
-                          start $ q+ (quaternion a-w 8 5 z-base)
-                            quaternion 0 0 0 $ * z-inc idx
-                          points $ calc-points start multiplier $ ceil rotate-inc-size
-                        []
-                          quatrefoil.alias/create-element :group ({})
-                            -> points $ map-indexed $ fn (point-idx p)
-                              comp-point p $ = 0 point-idx
-                          line $ {}
-                            :points $ map points quaternion-position
-                            :position $ [] 0 0 0
-                            :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
-                comp-point scaled-multiplier true
-                if show-labels? $ comp-labels
-                  quaternion-position $ quaternion a-w 8 5 z-base
-                  quaternion-position scaled-multiplier
-                comp-value
-                  {} (:speed 0.04) (:show-text? true) (:label |w-ratio) (:value w-ratio)
-                    :position $ [] 4 2 12
-                    :bound $ [] 0 1
-                    :color 0xffff55
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :w-ratio v1
-                comp-value
-                  {} (:speed 1) (:show-text? true) (:label |z-base) (:value z-base)
-                    :position $ [] 12 12 1
-                    :bound $ [] -20 60
-                    :color 0xffff55
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :z-base v1
-                comp-value
-                  {} (:speed 2) (:show-text? true) (:label |a-w) (:value a-w)
-                    :position $ [] 12 22 1
-                    :bound $ [] 0 20
-                    :color 0x77ffcc
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :a-w v1
-                comp-value
-                  {} (:speed 1) (:show-text? true) (:label |z-inc) (:value z-inc)
-                    :position $ [] 13 14 4
-                    :bound $ [] 0.4 20
-                    :color 0xffff55
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :z-inc v1
-                comp-value
-                  {} (:speed 1) (:show-text? true) (:label |z-inc-size) (:value z-inc-size)
-                    :position $ [] 18 15 1
-                    :bound $ [] 1 6
-                    :color 0xff55ff
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :z-inc-size v1
-                comp-value
-                  {} (:speed 2) (:show-text? true) (:label |rotate-inc-size) (:value rotate-inc-size)
-                    :position $ [] -4 4 -20
-                    :bound $ [] 1 20
-                    :color 0xff55ff
-                  fn (v1 d!)
-                    hint-fn $ {}
-                      :args $ [] 'Number $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :rotate-inc-size v1
-                comp-switch
-                  {} (:label |labels?) (:color 0x8855ff) (:value show-labels?)
-                    :position $ [] 30 0 0
-                  fn (v d!)
-                    hint-fn $ {}
-                      :args $ [] 'Bool $ :: 'Fn
-                        {}
-                          :args $ [] 'Dynamic 'Dynamic
-                          :return 'Unit
-                      :return 'Unit
-                    d! cursor $ assoc state :show-labels? v
-                point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
-                  :position $ [] 20 40 50
+              group ({})
+                .merge
+                  {} (0 element-axis)
+                    1 $ quatrefoil.alias/create-element :group ({})
+                      ->
+                        range $ ceil z-inc-size
+                        mapcat $ fn (idx)
+                          hint-fn $ Fn Number $ -> (List Dynamic)
+                          let
+                              start $ q+ (quaternion a-w 8 5 z-base)
+                                quaternion 0 0 0 $ * z-inc idx
+                              points $ calc-points start multiplier $ ceil rotate-inc-size
+                            []
+                              quatrefoil.alias/create-element :group ({})
+                                -> points $ map-indexed $ fn (point-idx p)
+                                  comp-point p $ = 0 point-idx
+                              line $ {}
+                                :points $ map points quaternion-position
+                                :position $ [] 0 0 0
+                                :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
+                    2 $ comp-point scaled-multiplier true
+                    4 $ comp-value
+                      {} (:speed 0.04) (:show-text? true) (:label |w-ratio) (:value w-ratio)
+                        :position $ [] 4 2 12
+                        :bound $ [] 0 1
+                        :color 0xffff55
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :w-ratio v1
+                    5 $ comp-value
+                      {} (:speed 1) (:show-text? true) (:label |z-base) (:value z-base)
+                        :position $ [] 12 12 1
+                        :bound $ [] -20 60
+                        :color 0xffff55
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :z-base v1
+                    6 $ comp-value
+                      {} (:speed 2) (:show-text? true) (:label |a-w) (:value a-w)
+                        :position $ [] 12 22 1
+                        :bound $ [] 0 20
+                        :color 0x77ffcc
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :a-w v1
+                    7 $ comp-value
+                      {} (:speed 1) (:show-text? true) (:label |z-inc) (:value z-inc)
+                        :position $ [] 13 14 4
+                        :bound $ [] 0.4 20
+                        :color 0xffff55
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :z-inc v1
+                    8 $ comp-value
+                      {} (:speed 1) (:show-text? true) (:label |z-inc-size) (:value z-inc-size)
+                        :position $ [] 18 15 1
+                        :bound $ [] 1 6
+                        :color 0xff55ff
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :z-inc-size v1
+                    9 $ comp-value
+                      {} (:speed 2) (:show-text? true) (:label |rotate-inc-size) (:value rotate-inc-size)
+                        :position $ [] -4 4 -20
+                        :bound $ [] 1 20
+                        :color 0xff55ff
+                      fn (v1 d!)
+                        hint-fn $ Fn Number
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :rotate-inc-size v1
+                    10 $ comp-switch
+                      {} (:label |labels?) (:color 0x8855ff) (:value show-labels?)
+                        :position $ [] 30 0 0
+                      fn (v d!)
+                        hint-fn $ Fn Bool
+                          Fn Dynamic Dynamic $ -> Unit
+                          -> Unit
+                        d! cursor $ assoc state :show-labels? v
+                    11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
+                      :position $ [] 20 40 50
+                  if show-labels?
+                    {} $ 3 $ comp-labels
+                      quaternion-position $ quaternion a-w 8 5 z-base
+                      quaternion-position scaled-multiplier
+                    {} $ 3 nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] $ :: 'Map 'Tag 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-point (position first?)
             let
@@ -251,9 +219,7 @@
                   :position point
                   :material $ {} (:kind :mesh-standard) (:color 0xdd0088) (:opacity 0.6) (:transparent false)
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'quatrefoil.schema/Component)
-            :args $ [] 'quaternion.core/Quaternion 'Bool
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn quaternion.core/Quaternion Bool (-> quatrefoil.schema/Component) (:features :js-ffi)
         'element-axis $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def element-axis
             group ({})
@@ -264,43 +230,39 @@
                 :points $ [] ([] 0 0 20) ([] 0 0 -20)
                 :material $ assoc cover-line :color 0xffff99
           :examples $ []
-          :schema $ :: 'quatrefoil.schema/Shape
+          :schema $ quote quatrefoil.schema/Shape
         'field $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn field (value key)
             match (get value key)
               (:some found) found
               (:none) nil
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Dynamic)
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Tag
+          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
         'quaternion-position $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn quaternion-position (value)
             match value $
               :quaternion s x y z
               [] x y z s
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'quaternion.core/Quaternion
-            :return $ :: 'List 'Number
+          :schema $ quote $ Fn quaternion.core/Quaternion
+            -> $ List Number
         'quaternion-s $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn quaternion-s (value)
             match value $
               :quaternion s _x _y _z
               , s
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Number)
-            :args $ [] 'quaternion.core/Quaternion
+          :schema $ quote $ Fn quaternion.core/Quaternion (-> Number)
         'w-hint-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn w-hint-fn (ratio factor)
             [] 0 (* ratio factor) 0
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] 'Number 'Number
-            :return $ :: 'List 'Number
+          :schema $ quote $ Fn Number Number
+            -> $ List Number
         'zero-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def zero-point ([] 0 0 0)
           :examples $ []
-          :schema $ :: 'List 'Number
+          :schema $ quote $ List Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.multiply
           :require
@@ -316,16 +278,14 @@
             {} $ :states $ {}
               :cursor $ []
           :examples $ []
-          :schema $ :: 'Ref $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Ref (Map Tag Dynamic)
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
-            .mobile? $ :: 'Fn $ {}
-              :args $ [] 'app.main/MobileDetectHost
-              :return 'Bool
+            .mobile? $ quote $ Fn app.main/MobileDetectHost (-> Bool)
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :mobile? |mobile
-          :schema $ :: 'Trait
+          :schema $ quote Trait
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op op-data)
             if (list? op)
@@ -336,9 +296,7 @@
                 reset! *store store
                 , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ [] 'Dynamic 'Dynamic
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn Dynamic Dynamic (-> Unit) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
@@ -357,18 +315,14 @@
             println |App-started!
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'mobile? $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn mobile? ()
             let
                 detector $ unsafe-coerce (new mobile-detect js/window.navigator.userAgent) app.main/MobileDetectHost
               detector .mobile?
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Bool)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Bool) (:features :js-ffi)
         'reload! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn reload! ()
             if
@@ -383,15 +337,12 @@
                 println |Code-updated.
             , &unit
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
-            :features $ #{} :js-ffi
+          :schema $ quote $ Fn (-> Unit) (:features :js-ffi)
         'render-app! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn render-app! () (; println "|Render app:")
             render-canvas! (comp-container @*store) dispatch!
           :examples $ []
-          :schema $ :: 'Fn $ {} (:return 'Unit)
-            :args $ []
+          :schema $ quote $ Fn (-> Unit)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
@@ -414,9 +365,8 @@
               :states $ update-states store op-data
               _ store
           :examples $ []
-          :schema $ :: 'Fn $ {}
-            :args $ [] (:: 'Map 'Tag 'Dynamic) 'Dynamic 'Dynamic
-            :return $ :: 'Map 'Tag 'Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) Dynamic Dynamic
+            -> $ Map Tag Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require $ quatrefoil.cursor :refer $ update-states
