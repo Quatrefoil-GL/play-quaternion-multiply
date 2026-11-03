@@ -8,6 +8,32 @@ Demo http://r.tiye.me/Quatrefoil-GL/play-quaternion-multiply
 
 Video: 四元数乘法可视化 https://www.bilibili.com/video/BV1if4y1t7Yq
 
+### 本轮 0.34.2 使用者影响
+
+配对 CLI/procs 0.34.2、正式 Quatrefoil 0.3.0，其他模块保持正式版本。
+新 Quatrefoil 要求物体 position 恰好三个分量；旧应用把四项 [x y z scalar] 当 position
+会报错。现新增 quaternion-xyz 提供三项 Tuple，仅用于点/标量提示与标签的渲染位置。
+原 quaternion-position 仍返回四项 Tuple，曲线数据和标量内容保留，未删除第四项。
+comp-labels 的两个位置参数收紧为 Tuple3，直接调用方需相应配对。
+
+w-hint-fn 与 zero-point 明确为 Tuple3；原公式、乘法顺序、迭代次数、节点编号、
+可选标签开关、默认值、材质、HUD、应用版本及部署路径不变。除官方格式化外，
+23 个原定义中六个有预期类型/调用调整，新增一个 xyz helper。原 FFI 元数据保持，
+只为这个实际渲染故障增加一项 owning-definition native 回归，复用原 CI 一条命令，
+不加脚本或测试框架、不放宽门禁，unresolved Dynamic 仍为 9。
+
+本轮正式 Caps strict/CI、immutable、toolchain、234 个定义、公开 24 定义、完整 strict、
+一项新 native 回归、原质量检查及构建通过，deprecated/dynamic-method=0。
+原项目无附带测试，不把空选择称作原测试套件通过。新回归验证 xyz 经过实际 read-vec3
+适配器后可用，同时四项数据 helper 仍保留 scalar。
+
+临时 Vite 内存检查生成实际 Three 默认和两组非零/labels 场景，位置均有限；新 xyz 与
+原四项结果的前三项一致。未修复的旧源码在 0.3.0 下无法构建完整场景，因此不宣称
+原、新完整场景摘要等价。模块初始化仅用 div/键盘监听占位，WebSocket 绑定限制保留；
+不当作 DOM 命中、WebGL/视觉或控件验收。最终精确 CI 待远端执行，本轮不合并或部署。
+
+### 此前 0.32.1 迁移记录
+
 ### Workflow
 
 https://github.com/Quatrefoil-GL/quatrefoil-workflow

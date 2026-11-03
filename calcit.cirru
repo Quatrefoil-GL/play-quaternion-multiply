@@ -13,14 +13,16 @@
         'comp-container $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as (field store :states) (:: 'Map 'Tag 'Dynamic)
+                states $ decode-map-as (field store :states)
+                  quote $ Map Tag Dynamic
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] 0 1.2 -0.5
-                  comp-multiply $ decode-map-as (>> states :multiply) (:: 'Map 'Tag 'Dynamic)
+                  comp-multiply $ decode-map-as (>> states :multiply)
+                    quote $ Map Tag Dynamic
                   ambient-light $ {} $ :color 0x666666
                   ; point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
                     :position $ [] 20 40 50
@@ -81,7 +83,7 @@
                 :position $ [] 20 0 0
                 :material $ {} (:kind :mesh-lambert) (:color 0x664488) (:opacity 0.9) (:transparent true)
           :examples $ []
-          :schema $ quote $ Fn (List Number) (List Number) (-> quatrefoil.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn (Tuple Number Number Number) (Tuple Number Number Number) (-> quatrefoil.schema/Component)
         'comp-multiply $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-multiply (states)
             let
@@ -89,7 +91,7 @@
                 state $ decode-map-as
                   or (field states :data)
                     {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
-                  :: 'Map 'Tag 'Dynamic
+                  quote $ Map Tag Dynamic
                 w-ratio $ as-number $ field state :w-ratio
                 z-base $ as-number $ field state :z-base
                 z-inc $ as-number $ field state :z-inc
@@ -198,15 +200,15 @@
                       :position $ [] 20 40 50
                   if show-labels?
                     {} $ 3 $ comp-labels
-                      quaternion-position $ quaternion a-w 8 5 z-base
-                      quaternion-position scaled-multiplier
+                      quaternion-xyz $ quaternion a-w 8 5 z-base
+                      quaternion-xyz scaled-multiplier
                     {} $ 3 nil
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-point (position first?)
             let
-                point $ quaternion-position position
+                point $ quaternion-xyz position
               group ({})
                 sphere $ {} (:radius 0.5) (:position point)
                   :material $ {} (:kind :mesh-standard) (:opacity 0.6) (:transparent true)
@@ -238,14 +240,15 @@
               (:none) nil
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
-        'quaternion-position $ %{} 'CodeEntry (:doc |)
+        'quaternion-position $ %{} 'CodeEntry
+          :doc "|保留原 [x y z scalar] 四项数据，不能直接用作只接受三项的物体 position；渲染位置请用 quaternion-xyz。"
           :code $ quote $ defn quaternion-position (value)
             match value $
               :quaternion s x y z
               [] x y z s
           :examples $ []
           :schema $ quote $ Fn quaternion.core/Quaternion
-            -> $ List Number
+            -> $ Tuple Number Number Number Number
         'quaternion-s $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn quaternion-s (value)
             match value $
@@ -253,16 +256,32 @@
               , s
           :examples $ []
           :schema $ quote $ Fn quaternion.core/Quaternion (-> Number)
+        'quaternion-xyz $ %{} 'CodeEntry
+          :doc "|提取渲染位置所需的三个 Number。四项 [x y z scalar] 数据仍由 quaternion-position 保留。"
+          :code $ quote $ defn quaternion-xyz (value)
+            match value $
+              :quaternion _scalar x y z
+              [] x y z
+          :examples $ []
+          :schema $ quote $ Fn quaternion.core/Quaternion
+            -> $ Tuple Number Number Number
+          :tests $ [] $ %{} 'TestEntry
+            :name |three-dimensional-positions-keep-scalar-separate
+            :code $ quote $ let
+                q $ quaternion.core/quaternion 9 1 2 3
+              assert= ([] 1 2 3)
+                quatrefoil.dsl.object3d-dom/read-vec3 $ quaternion-xyz q
+              assert= ([] 1 2 3 9) (quaternion-position q)
         'w-hint-fn $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn w-hint-fn (ratio factor)
             [] 0 (* ratio factor) 0
           :examples $ []
           :schema $ quote $ Fn Number Number
-            -> $ List Number
+            -> $ Tuple Number Number Number
         'zero-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ def zero-point ([] 0 0 0)
           :examples $ []
-          :schema $ quote $ List Number
+          :schema $ quote $ Tuple Number Number Number
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.multiply
           :require
