@@ -9,20 +9,21 @@
       :type-slots $ {}
   :files $ {}
     'app.comp.container $ %{} 'FileEntry
-      :defs $ {}
-        'comp-container $ %{} 'CodeEntry (:doc |)
+      :defs $ {} $ 'comp-container
+        %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as (field store :states)
-                  quote $ Map Tag Dynamic
+                states $ decode-map-as
+                    get store :states
+                    , .unwrap
+                  Map Tag Dynamic
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] 0 1.2 -0.5
-                  comp-multiply $ decode-map-as (>> states :multiply)
-                    quote $ Map Tag Dynamic
+                  comp-multiply $ decode-map-as (>> states :multiply) (Map Tag Dynamic)
                   ambient-light $ {} $ :color 0x666666
                   ; point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
                     :position $ [] 20 40 50
@@ -30,13 +31,6 @@
                     :position $ [] 0 60 0
           :examples $ []
           :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
-        'field $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn field (value key)
-            match (get value key)
-              (:some found) found
-              (:none) nil
-          :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
@@ -87,18 +81,38 @@
         'comp-multiply $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-multiply (states)
             let
-                cursor $ field states :cursor
+                cursor $ quatrefoil.util.core/require-decoded $ try-decode-map-as
+                    get states :cursor
+                    , .unwrap
+                  List Tag
                 state $ decode-map-as
-                  or (field states :data)
-                    {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
-                  quote $ Map Tag Dynamic
-                w-ratio $ as-number $ field state :w-ratio
-                z-base $ as-number $ field state :z-base
-                z-inc $ as-number $ field state :z-inc
-                z-inc-size $ as-number $ field state :z-inc-size
-                rotate-inc-size $ as-number $ field state :rotate-inc-size
-                a-w $ as-number $ field state :a-w
-                show-labels? $ as-bool $ field state :show-labels?
+                  match (get states :data)
+                    (:some found)
+                      or found $ {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                    (:none)
+                      {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                  Map Tag Dynamic
+                w-ratio $ as-number $
+                  get state :w-ratio
+                  , .unwrap
+                z-base $ as-number $
+                  get state :z-base
+                  , .unwrap
+                z-inc $ as-number $
+                  get state :z-inc
+                  , .unwrap
+                z-inc-size $ as-number $
+                  get state :z-inc-size
+                  , .unwrap
+                rotate-inc-size $ as-number $
+                  get state :rotate-inc-size
+                  , .unwrap
+                a-w $ as-number $
+                  get state :a-w
+                  , .unwrap
+                show-labels? $ as-bool $
+                  get state :show-labels?
+                  , .unwrap
                 multiplier $ let
                     x 0
                     y 0
@@ -114,7 +128,7 @@
                       ->
                         range $ ceil z-inc-size
                         mapcat $ fn (idx)
-                          hint-fn $ Fn Number $ -> (List Dynamic)
+                          hint-fn $ Fn Number $ -> (List quatrefoil.schema/Shape)
                           let
                               start $ q+ (quaternion a-w 8 5 z-base)
                                 quaternion 0 0 0 $ * z-inc idx
@@ -135,7 +149,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :w-ratio v1
                     5 $ comp-value
@@ -145,7 +159,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-base v1
                     6 $ comp-value
@@ -155,7 +169,7 @@
                         :color 0x77ffcc
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :a-w v1
                     7 $ comp-value
@@ -165,7 +179,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc v1
                     8 $ comp-value
@@ -175,7 +189,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc-size v1
                     9 $ comp-value
@@ -185,7 +199,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :rotate-inc-size v1
                     10 $ comp-switch
@@ -193,7 +207,7 @@
                         :position $ [] 30 0 0
                       fn (v d!)
                         hint-fn $ Fn Bool
-                          Fn Dynamic Dynamic $ -> Unit
+                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :show-labels? v
                     11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
@@ -233,13 +247,6 @@
                 :material $ assoc cover-line :color 0xffff99
           :examples $ []
           :schema $ quote quatrefoil.schema/Shape
-        'field $ %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn field (value key)
-            match (get value key)
-              (:some found) found
-              (:none) nil
-          :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) Tag (-> Dynamic)
         'quaternion-position $ %{} 'CodeEntry
           :doc "|保留原 [x y z scalar] 四项数据，不能直接用作只接受三项的物体 position；渲染位置请用 quaternion-xyz。"
           :code $ quote $ defn quaternion-position (value)
@@ -300,7 +307,7 @@
           :schema $ quote $ Ref (Map Tag Dynamic)
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
-            .mobile? $ quote $ Fn app.main/MobileDetectHost (-> Bool)
+            .mobile? $ Fn app.main/MobileDetectHost $ -> Bool
           :examples $ []
           :ffi $ {} (:backend :js) (:kind :external-object) (:target :browser)
             :names $ {} $ :mobile? |mobile
