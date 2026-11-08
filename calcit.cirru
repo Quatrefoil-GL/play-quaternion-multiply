@@ -39,14 +39,18 @@
             app.comp.multiply :refer $ comp-multiply
     'app.comp.multiply $ %{} 'FileEntry
       :defs $ {}
+        'ControlValue $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion ControlValue Number Bool
+          :examples $ []
+          :schema $ quote UnionDef
         'as-bool $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-bool (value) (decode-map-as value 'Bool)
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Bool) (:features :js-ffi)
+          :schema $ quote $ Fn app.comp.multiply/ControlValue (-> Bool) (:features :js-ffi)
         'as-number $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-number (value) (decode-map-as value 'Number)
           :examples $ []
-          :schema $ quote $ Fn Dynamic (-> Number) (:features :js-ffi)
+          :schema $ quote $ Fn app.comp.multiply/ControlValue (-> Number) (:features :js-ffi)
         'calc-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn calc-points (p0 next times)
             if (<= times 0) ([])
@@ -91,7 +95,7 @@
                       or found $ {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
                     (:none)
                       {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
-                  Map Tag Dynamic
+                  Map Tag app.comp.multiply/ControlValue
                 w-ratio $ as-number $
                   get state :w-ratio
                   , .unwrap
@@ -149,7 +153,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :w-ratio v1
                     5 $ comp-value
@@ -159,7 +163,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-base v1
                     6 $ comp-value
@@ -169,7 +173,7 @@
                         :color 0x77ffcc
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :a-w v1
                     7 $ comp-value
@@ -179,7 +183,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc v1
                     8 $ comp-value
@@ -189,7 +193,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc-size v1
                     9 $ comp-value
@@ -199,7 +203,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :rotate-inc-size v1
                     10 $ comp-switch
@@ -207,7 +211,7 @@
                         :position $ [] 30 0 0
                       fn (v d!)
                         hint-fn $ Fn Bool
-                          Fn (List Tag) (Map Tag Dynamic) (-> Unit)
+                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :show-labels? v
                     11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
