@@ -8,7 +8,11 @@ Demo http://r.tiye.me/Quatrefoil-GL/play-quaternion-multiply
 
 Video: 四元数乘法可视化 https://www.bilibili.com/video/BV1if4y1t7Yq
 
-### 本轮 0.34.2 使用者影响
+### 当前开发版本
+
+本地开发使用正式 Calcit 与 `@calcit/procs` 0.40.0，修改后重新生成 JS 并构建前端。
+
+### 0.34.2 迁移记录
 
 配对 CLI/procs 0.34.2、正式 Quatrefoil 0.3.0，其他模块保持正式版本。
 新 Quatrefoil 要求物体 position 恰好三个分量；旧应用把四项 [x y z scalar] 当 position

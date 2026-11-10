@@ -321,8 +321,17 @@
             if (list? op)
               recur :states $ [] op op-data
               let
-                  store $ updater @*store op op-data
-                ; js/console.log |Dispatch: op op-data store
+                  store $ if (= op :states)
+                    let
+                        args $ decode-map-as op-data $ List Dynamic
+                        path $ decode-map-as
+                          .unwrap $ nth args 0
+                          List Tag
+                        state $ decode-map-as
+                          .unwrap $ nth args 1
+                          Map Tag app.comp.multiply/ControlValue
+                      updater @*store path state
+                    , @*store
                 reset! *store store
                 , &unit
           :examples $ []
@@ -390,12 +399,10 @@
     'app.updater $ %{} 'FileEntry
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
-          :code $ quote $ defn updater (store op op-data)
-            match op
-              :states $ update-states store op-data
-              _ store
+          :code $ quote $ defn updater (store path state)
+            update-states store $ [] path state
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) Dynamic Dynamic
+          :schema $ quote $ Fn (Map Tag Dynamic) (List Tag) (Map Tag app.comp.multiply/ControlValue)
             -> $ Map Tag Dynamic
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
