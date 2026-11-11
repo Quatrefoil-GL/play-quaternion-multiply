@@ -325,14 +325,8 @@
                   decode-map-as op-data $ Map Tag app.comp.multiply/ControlValue
               (and (tag? op) (= op :states))
                 let
-                    args $ decode-map-as op-data $ List Dynamic
-                    path $ decode-map-as
-                      .unwrap $ nth args 0
-                      List Tag
-                    state $ decode-map-as
-                      .unwrap $ nth args 1
-                      Map Tag app.comp.multiply/ControlValue
-                  updater @*store path state
+                    args $ decode-map-as op-data $ Tuple (List Tag) (Map Tag app.comp.multiply/ControlValue)
+                  let[] (path state) args $ updater @*store path state
               true @*store
             , &unit
           :examples $ []
