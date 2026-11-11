@@ -46,11 +46,11 @@
         'as-bool $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-bool (value) (decode-map-as value 'Bool)
           :examples $ []
-          :schema $ quote $ Fn app.comp.multiply/ControlValue (-> Bool) (:features :js-ffi)
+          :schema $ quote $ Fn ControlValue (-> Bool) (:features :js-ffi)
         'as-number $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn as-number (value) (decode-map-as value 'Number)
           :examples $ []
-          :schema $ quote $ Fn app.comp.multiply/ControlValue (-> Number) (:features :js-ffi)
+          :schema $ quote $ Fn ControlValue (-> Number) (:features :js-ffi)
         'calc-points $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn calc-points (p0 next times)
             if (<= times 0) ([])
@@ -318,24 +318,25 @@
           :schema $ quote Trait
         'dispatch! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn dispatch! (op op-data)
-            if (list? op)
-              recur :states $ [] op op-data
-              let
-                  store $ if (= op :states)
-                    let
-                        args $ decode-map-as op-data $ List Dynamic
-                        path $ decode-map-as
-                          .unwrap $ nth args 0
-                          List Tag
-                        state $ decode-map-as
-                          .unwrap $ nth args 1
-                          Map Tag app.comp.multiply/ControlValue
-                      updater @*store path state
-                    , @*store
-                reset! *store store
-                , &unit
+            reset! *store $ cond
+                list? op
+                updater @*store
+                  decode-map-as op $ List Tag
+                  decode-map-as op-data $ Map Tag app.comp.multiply/ControlValue
+              (and (tag? op) (= op :states))
+                let
+                    args $ decode-map-as op-data $ List Dynamic
+                    path $ decode-map-as
+                      .unwrap $ nth args 0
+                      List Tag
+                    state $ decode-map-as
+                      .unwrap $ nth args 1
+                      Map Tag app.comp.multiply/ControlValue
+                  updater @*store path state
+              true @*store
+            , &unit
           :examples $ []
-          :schema $ quote $ Fn Dynamic Dynamic (-> Unit) (:features :js-ffi)
+          :schema $ quote $ Fn Action Payload (-> Unit) (:generics Action Payload) (:features :js-ffi)
         'main! $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defn main! () (load-console-formatter!) (inject-tree-methods)
             set-perspective-camera! $ {} (:fov 40) (:near 0.1) (:far 100)
