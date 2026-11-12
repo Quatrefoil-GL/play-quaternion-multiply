@@ -13,24 +13,26 @@
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-container (store)
             let
-                states $ decode-map-as
-                    get store :states
-                    , .unwrap
-                  Map Tag Dynamic
+                states $
+                  get store :states
+                  , .unwrap
                 scaled 0.02
               scene ({})
                 group
                   {}
                     :scale $ [] scaled scaled scaled
                     :position $ [] 0 1.2 -0.5
-                  comp-multiply $ decode-map-as (>> states :multiply) (Map Tag Dynamic)
+                  comp-multiply $ decode-map-as (>> states :multiply) (Map Tag app.comp.multiply/ControlNode)
                   ambient-light $ {} $ :color 0x666666
                   ; point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
                     :position $ [] 20 40 50
                   ; point-light $ {} (:color 0xffffff) (:intensity 2) (:distance 200)
                     :position $ [] 0 60 0
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn
+            Map Tag $ Map Tag app.comp.multiply/ControlNode
+            -> quatrefoil.schema/Component
+            :features :js-ffi
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.comp.container
           :require
@@ -39,6 +41,10 @@
             app.comp.multiply :refer $ comp-multiply
     'app.comp.multiply $ %{} 'FileEntry
       :defs $ {}
+        'ControlNode $ %{} 'CodeEntry (:doc |)
+          :code $ quote $ defunion ControlNode ControlValue (List Tag) (Map Tag ControlNode)
+          :examples $ []
+          :schema $ quote UnionDef
         'ControlValue $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defunion ControlValue Number Bool
           :examples $ []
@@ -153,7 +159,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :w-ratio v1
                     5 $ comp-value
@@ -163,7 +169,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-base v1
                     6 $ comp-value
@@ -173,7 +179,7 @@
                         :color 0x77ffcc
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :a-w v1
                     7 $ comp-value
@@ -183,7 +189,7 @@
                         :color 0xffff55
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc v1
                     8 $ comp-value
@@ -193,7 +199,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :z-inc-size v1
                     9 $ comp-value
@@ -203,7 +209,7 @@
                         :color 0xff55ff
                       fn (v1 d!)
                         hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :rotate-inc-size v1
                     10 $ comp-switch
@@ -211,7 +217,7 @@
                         :position $ [] 30 0 0
                       fn (v d!)
                         hint-fn $ Fn Bool
-                          Fn (List Tag) (Map Tag app.comp.multiply/ControlValue) (-> Unit)
+                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
                           -> Unit
                         d! cursor $ assoc state :show-labels? v
                     11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
@@ -222,7 +228,7 @@
                       quaternion-xyz scaled-multiplier
                     {} $ 3 nil
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (-> quatrefoil.schema/Component) (:features :js-ffi)
+          :schema $ quote $ Fn (Map Tag ControlNode) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-point $ %{} 'CodeEntry (:doc |)
           :code $ quote $ defcomp comp-point (position first?)
             let
@@ -308,7 +314,8 @@
             {} $ :states $ {}
               :cursor $ []
           :examples $ []
-          :schema $ quote $ Ref (Map Tag Dynamic)
+          :schema $ quote $ Ref
+            Map Tag $ Map Tag app.comp.multiply/ControlNode
         'MobileDetectHost $ %{} 'CodeEntry (:doc |)
           :code $ quote $ deftrait MobileDetectHost
             .mobile? $ Fn app.main/MobileDetectHost $ -> Bool
@@ -395,10 +402,15 @@
       :defs $ {} $ 'updater
         %{} 'CodeEntry (:doc |)
           :code $ quote $ defn updater (store path state)
-            update-states store $ [] path state
+            decode-map-as
+              update-states store $ [] path state
+              Map Tag $ Map Tag app.comp.multiply/ControlNode
           :examples $ []
-          :schema $ quote $ Fn (Map Tag Dynamic) (List Tag) (Map Tag app.comp.multiply/ControlValue)
-            -> $ Map Tag Dynamic
+          :schema $ quote $ Fn
+            Map Tag $ Map Tag app.comp.multiply/ControlNode
+            List Tag
+            Map Tag app.comp.multiply/ControlValue
+            -> $ Map Tag $ Map Tag app.comp.multiply/ControlNode
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.updater
           :require $ quatrefoil.cursor :refer $ update-states

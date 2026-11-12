@@ -10,7 +10,7 @@ Video: 四元数乘法可视化 https://www.bilibili.com/video/BV1if4y1t7Yq
 
 ### 当前开发版本
 
-本地开发使用正式 Calcit 与 `@calcit/procs` 0.41.0，修改后重新生成 JS 并构建前端。
+本地开发使用正式 Calcit 与 `@calcit/procs` 0.41.1，修改后重新生成 JS 并构建前端。
 
 ### 0.34.2 迁移记录
 
