@@ -132,101 +132,103 @@
                   quaternion w x y z_
                 scaled-multiplier $ q-scale multiplier 10
               group ({})
-                .merge
-                  {} (0 element-axis)
-                    1 $ quatrefoil.alias/create-element :group ({})
-                      ->
-                        range $ ceil z-inc-size
-                        mapcat $ fn (idx)
-                          hint-fn $ Fn Number $ -> (List quatrefoil.schema/Shape)
-                          let
-                              start $ q+ (quaternion a-w 8 5 z-base)
-                                quaternion 0 0 0 $ * z-inc idx
-                              points $ calc-points start multiplier $ ceil rotate-inc-size
-                            []
-                              quatrefoil.alias/create-element :group ({})
-                                -> points $ map-indexed $ fn (point-idx p)
-                                  comp-point p $ = 0 point-idx
-                              line $ {}
-                                :points $ map points quaternion-position
-                                :position $ [] 0 0 0
-                                :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
-                    2 $ comp-point scaled-multiplier true
-                    4 $ comp-value
-                      {} (:speed 0.04) (:show-text? true) (:label |w-ratio) (:value w-ratio)
-                        :position $ [] 4 2 12
-                        :bound $ [] 0 1
-                        :color 0xffff55
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :w-ratio v1
-                    5 $ comp-value
-                      {} (:speed 1) (:show-text? true) (:label |z-base) (:value z-base)
-                        :position $ [] 12 12 1
-                        :bound $ [] -20 60
-                        :color 0xffff55
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :z-base v1
-                    6 $ comp-value
-                      {} (:speed 2) (:show-text? true) (:label |a-w) (:value a-w)
-                        :position $ [] 12 22 1
-                        :bound $ [] 0 20
-                        :color 0x77ffcc
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :a-w v1
-                    7 $ comp-value
-                      {} (:speed 1) (:show-text? true) (:label |z-inc) (:value z-inc)
-                        :position $ [] 13 14 4
-                        :bound $ [] 0.4 20
-                        :color 0xffff55
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :z-inc v1
-                    8 $ comp-value
-                      {} (:speed 1) (:show-text? true) (:label |z-inc-size) (:value z-inc-size)
-                        :position $ [] 18 15 1
-                        :bound $ [] 1 6
-                        :color 0xff55ff
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :z-inc-size v1
-                    9 $ comp-value
-                      {} (:speed 2) (:show-text? true) (:label |rotate-inc-size) (:value rotate-inc-size)
-                        :position $ [] -4 4 -20
-                        :bound $ [] 1 20
-                        :color 0xff55ff
-                      fn (v1 d!)
-                        hint-fn $ Fn Number
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :rotate-inc-size v1
-                    10 $ comp-switch
-                      {} (:label |labels?) (:color 0x8855ff) (:value show-labels?)
-                        :position $ [] 30 0 0
-                      fn (v d!)
-                        hint-fn $ Fn Bool
-                          Fn (List Tag) (Map Tag ControlValue) (-> Unit)
-                          -> Unit
-                        d! cursor $ assoc state :show-labels? v
-                    11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
-                      :position $ [] 20 40 50
-                  if show-labels?
-                    {} $ 3 $ comp-labels
-                      quaternion-xyz $ quaternion a-w 8 5 z-base
-                      quaternion-xyz scaled-multiplier
-                    {} $ 3 nil
+                decode-map-as
+                  .merge
+                    {} (0 element-axis)
+                      1 $ quatrefoil.alias/create-element :group ({})
+                        ->
+                          range $ ceil z-inc-size
+                          mapcat $ fn (idx)
+                            hint-fn $ Fn Number $ -> (List quatrefoil.schema/Shape)
+                            let
+                                start $ q+ (quaternion a-w 8 5 z-base)
+                                  quaternion 0 0 0 $ * z-inc idx
+                                points $ calc-points start multiplier $ ceil rotate-inc-size
+                              []
+                                quatrefoil.alias/create-element :group ({})
+                                  -> points $ map-indexed $ fn (point-idx p)
+                                    comp-point p $ = 0 point-idx
+                                line $ {}
+                                  :points $ map points quaternion-position
+                                  :position $ [] 0 0 0
+                                  :material $ {} (:kind :line-dashed) (:color 0xaaaaff) (:opacity 1) (:transparent false)
+                      2 $ comp-point scaled-multiplier true
+                      4 $ comp-value
+                        {} (:speed 0.04) (:show-text? true) (:label |w-ratio) (:value w-ratio)
+                          :position $ [] 4 2 12
+                          :bound $ [] 0 1
+                          :color 0xffff55
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :w-ratio v1
+                      5 $ comp-value
+                        {} (:speed 1) (:show-text? true) (:label |z-base) (:value z-base)
+                          :position $ [] 12 12 1
+                          :bound $ [] -20 60
+                          :color 0xffff55
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :z-base v1
+                      6 $ comp-value
+                        {} (:speed 2) (:show-text? true) (:label |a-w) (:value a-w)
+                          :position $ [] 12 22 1
+                          :bound $ [] 0 20
+                          :color 0x77ffcc
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :a-w v1
+                      7 $ comp-value
+                        {} (:speed 1) (:show-text? true) (:label |z-inc) (:value z-inc)
+                          :position $ [] 13 14 4
+                          :bound $ [] 0.4 20
+                          :color 0xffff55
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :z-inc v1
+                      8 $ comp-value
+                        {} (:speed 1) (:show-text? true) (:label |z-inc-size) (:value z-inc-size)
+                          :position $ [] 18 15 1
+                          :bound $ [] 1 6
+                          :color 0xff55ff
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :z-inc-size v1
+                      9 $ comp-value
+                        {} (:speed 2) (:show-text? true) (:label |rotate-inc-size) (:value rotate-inc-size)
+                          :position $ [] -4 4 -20
+                          :bound $ [] 1 20
+                          :color 0xff55ff
+                        fn (v1 d!)
+                          hint-fn $ Fn Number
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :rotate-inc-size v1
+                      10 $ comp-switch
+                        {} (:label |labels?) (:color 0x8855ff) (:value show-labels?)
+                          :position $ [] 30 0 0
+                        fn (v d!)
+                          hint-fn $ Fn Bool
+                            Fn (List Tag) (Map Tag ControlValue) (-> Unit)
+                            -> Unit
+                          d! cursor $ assoc state :show-labels? v
+                      11 $ point-light $ {} (:color 0xffffff) (:intensity 1.4) (:distance 200)
+                        :position $ [] 20 40 50
+                    if show-labels?
+                      {} $ 3 $ comp-labels
+                        quaternion-xyz $ quaternion a-w 8 5 z-base
+                        quaternion-xyz scaled-multiplier
+                      {}
+                  Map Number quatrefoil.schema/RenderTree
           :examples $ []
           :schema $ quote $ Fn (Map Tag ControlNode) (-> quatrefoil.schema/Component) (:features :js-ffi)
         'comp-point $ %{} 'CodeEntry (:doc |)
@@ -383,7 +385,7 @@
           :code $ quote $ defn render-app! () (; println "|Render app:")
             render-canvas! (comp-container @*store) dispatch!
           :examples $ []
-          :schema $ quote $ Fn (-> Unit) (:features :state)
+          :schema $ quote $ Fn (-> Unit) (:features :io :state)
       :ns $ %{} 'NsEntry (:doc |)
         :code $ quote $ ns app.main
           :require
