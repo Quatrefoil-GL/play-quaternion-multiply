@@ -98,7 +98,10 @@
                 state $ decode-map-as
                   match (get states :data)
                     (:some found)
-                      or found $ {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                      match found
+                        (Bool value)
+                          if value found $ {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
+                        _ found
                     (:none)
                       {} (:w-ratio 0.4) (:z-base 0) (:z-inc 0) (:z-inc-size 1) (:rotate-inc 1) (:a-w 0) (:rotate-inc-size 1) (:show-labels? true)
                   Map Tag app.comp.multiply/ControlValue
